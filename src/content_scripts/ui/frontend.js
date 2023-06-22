@@ -25,6 +25,7 @@ import createAPI from '../common/api.js';
 import createDefaultMappings from '../common/default.js';
 import createOmnibar from './omnibar.js';
 import createCommands from './command.js';
+// import createCommands from './cbn_command.js';
 
 const Front = (function() {
     const clipboard = createClipboard();
@@ -486,9 +487,23 @@ const Front = (function() {
         setSanitizedContent(_omnibar.querySelector('style'), `#sk_omnibar {${style}}`);
     };
     self.openOmnibar = _actions['openOmnibar'];
-    _actions['openFinder'] = function() {
+
+    _actions['openFinder'] = function(arg) {
+        console.log("cibin.w4asdf")        
         Find.open();
     };
+
+    _actions['openFinderCibin'] = function(arg) {
+        console.log("cibin.w4")        
+        Find.openq("the");
+    };
+    document.addEventListener("surfingkeys:openFinderCibin", function(evt) {
+        Find.openq("the");
+    });
+    
+    document.addEventListener("surfingkeys:openFinder", function(evt) {
+        Find.open();
+    });
 
     function showBanner(content, linger_time) {
         _banner.style.cssText = "";
@@ -805,7 +820,20 @@ var Find = (function() {
      *
      * @return {undefined}
      */
-    self.open = function() {
+    self.openq=function(arg) {
+        var query='the'
+        console.log("cibin find.open: ");
+        reset();
+        Front.visualCommand({
+            action: 'visualEnter',
+            query: query
+        });
+        runtime.updateHistory('find', query);
+    }
+
+    self.open = function(arg) {
+        console.log("arg: ");
+        console.log(arg);
         historyInc = -1;
         StatusBar.show(["/", '<input id="sk_find" class="sk_theme"/>']);
         input = Front.statusBar.querySelector("input");

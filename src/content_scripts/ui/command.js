@@ -123,4 +123,19 @@ export default (normal, command, omnibar) => {
         var dt = new Date(parseInt(args[0]));
         omnibar.listWords([dt.toString()]);
     });
+    command('userAgent', 'set user agent', function(args) {
+        // 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1'
+        RUNTIME('setUserAgent', {
+            userAgent: args.join(' ')
+        });
+    });
+    
+    // Not working (commands are not detected)
+    command('replaceAsciiColorCodes', 'replace Ascii Color Codes', function(args) {
+        const text=[...document.querySelectorAll("pre")];    
+        for (let i=0; i < text.length; i++) {
+            // https://stackoverflow.com/a/7150870
+            text[i].innerHTML = text[i].innerHTML.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,"");
+        }
+    });
 }

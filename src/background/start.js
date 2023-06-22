@@ -1042,6 +1042,7 @@ function start(browser) {
         const regex = new RegExp( query, 'gi');
         document.body.innerHTML = document.body.innerHTML.replace(regex, match => `<mark>${match}</mark>`);
     };
+
     self.getBookmarkFolders = function(message, sender, sendResponse) {
         chrome.bookmarks.getTree(function(tree) {
             bookmarkFolders = [];
@@ -1756,13 +1757,39 @@ function start(browser) {
     self.manageWindow = function(message, sender, sendResponse) {
         console.log("hello");
         var tabId;
+        // chrome.windows.getAll({
+        //     populate: false
+        // }, function(windows) {
+        //     windows.forEach(function(w) {
+        //         console.log(w.id);
+        //     });
+        // });
+
         var wid;
+        // chrome.storage.local.set({ key: value }).then(() => {
+        //     console.log("Value is set");
+        //   });
+
+        
+
         if (message.bookmark)
         {
+            // console.log("bookmarking current window: " + wid);
+            // return wid;
             chrome.windows.getCurrent({
                 populate: false
             }, function(w) {
                 console.log("getting current window: " + w.id);
+
+                // return w.id
+                // chrome.tabs.getCurrent(function (tab) {
+                //     console.log(tab.id);
+                //     tabId = tab.id;
+                //     _response(message, sendResponse, {
+                //         tabs: w.id,
+                //         tabId: tab.id
+                //     });
+                //   });
                   _response(message, sendResponse, {
                     tabs: w.id
                 });

@@ -559,7 +559,7 @@ function parseAnnotation(ag) {
     return ag;
 }
 
-function mapInMode(mode, nks, oks) {
+function mapInMode(mode, nks, oks, new_annotation) {
     oks = KeyboardUtils.encodeKeystroke(oks);
     var old_map = mode.mappings.find(oks);
     if (old_map) {
@@ -567,6 +567,9 @@ function mapInMode(mode, nks, oks) {
         mode.mappings.remove(nks);
         // meta.word need to be new
         var meta = Object.assign({}, old_map.meta);
+        if (new_annotation) {
+            meta = Object.assign(meta, parseAnnotation({ annotation: new_annotation }));
+        }
         mode.mappings.add(nks, meta);
         if (!isInUIFrame()) {
             dispatchSKEvent('addMapkey', [mode.name, nks, oks]);
@@ -802,11 +805,27 @@ function regexFromString(str, highlight) {
     return rxp;
 }
 
+function safeDecodeURI(url) {
+    try {
+        return decodeURI(url);
+    } catch (e) {
+        return url;
+    }
+}
+
+function safeDecodeURIComponent(url) {
+    try {
+        return decodeURIComponent(url);
+    } catch (e) {
+        return url;
+    }
+}
+
 function filterByTitleOrUrl(urls, query) {
     if (query && query.length) {
         var rxp = regexFromString(query, false);
         urls = urls.filter(function(b) {
-            return rxp.test(b.title) || rxp.test(decodeURI(b.url));
+            return rxp.test(b.title) || rxp.test(safeDecodeURI(b.url));
         });
     }
     return urls;
@@ -898,6 +917,8 @@ export {
     refreshHints,
     regexFromString,
     reportIssue,
+    safeDecodeURI,
+    safeDecodeURIComponent,
     scrollIntoViewIfNeeded,
     setSanitizedContent,
     showBanner,

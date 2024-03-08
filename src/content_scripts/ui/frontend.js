@@ -35,6 +35,7 @@ const Front = (function() {
 
     const self = new Mode("Front");
     self._actions = {};
+    self.topSize = [0, 0];
     const omnibar = createOmnibar(self, clipboard);
 
     createCommands(normal, omnibar.command, omnibar);
@@ -51,17 +52,17 @@ const Front = (function() {
     var _actions = self._actions,
         _callbacks = {};
     self.contentCommand = function(args, successById) {
-        args.commandToContent = true;
+        args.toContent = true;
         args.id = generateQuickGuid();
         if (successById) {
             args.ack = true;
             _callbacks[args.id] = successById;
         }
-        top.postMessage({surfingkeys_data: args}, self.topOrigin);
+        top.postMessage({surfingkeys_uihost_data: args}, self.topOrigin);
     };
 
     self.postMessage = function(args) {
-        top.postMessage({surfingkeys_data: args}, self.topOrigin);
+        top.postMessage({surfingkeys_uihost_data: args}, self.topOrigin);
     };
 
     var pressedHintKeys = "";
@@ -107,7 +108,7 @@ const Front = (function() {
         this.enter = function() {
             onEnter && onEnter();
             _state = this;
-            top.postMessage({surfingkeys_data: {
+            top.postMessage({surfingkeys_uihost_data: {
                 action: 'setFrontFrame',
                 pointerEvents: pointerEvents,
                 frameHeight: frameHeight
@@ -255,10 +256,14 @@ const Front = (function() {
         var hintLabels = hints.genLabels(tabs.length - 1);
         var j = 0;
         const unitWidth = window.innerWidth / tabs.length - 2;
+        const verticalTabs = runtime.conf.verticalTabs;
+        _tabs.className = verticalTabs ? "vertical" : "horizontal";
         tabs.forEach(function(t, i) {
             var tab = document.createElement('div');
             tab.setAttribute('class', 'sk_tab');
-            tab.style.width = unitWidth + 'px';
+            if (!verticalTabs) {
+                tab.style.width = unitWidth + 'px';
+            }
             if (t.active === false) {
                 setSanitizedContent(tab, `<div class=sk_tab_hint>${hintLabels[j]}</div><div class=sk_tab_wrap><div class=sk_tab_icon><img/></div><div class=sk_tab_title>${htmlEncode(t.title)}</div></div>`);
                 const tabHint = tab.querySelector("div.sk_tab_hint");
@@ -270,9 +275,16 @@ const Front = (function() {
                 tab.style.boxShadow = "0px 3px 7px 0px rgba(245, 245, 0, 0.9)";
             }
             attachFaviconToImgSrc(t, tab.querySelector("img"));
-            tab.querySelector("div.sk_tab_title").style.width = (unitWidth - 24) + 'px';
+            if (verticalTabs) {
+                tab.append(createElementWithContent('div', '🚀', {class: "tab_rocket"}));
+            } else {
+                tab.querySelector("div.sk_tab_title").style.width = (unitWidth - 24) + 'px';
+            }
             _tabs.append(tab);
         });
+        if (_tabs.getBoundingClientRect().height > self.topSize[1]) {
+            _tabs.className = "inline";
+        }
     };
     _actions['chooseTab'] = function() {
         const tabsThreshold = Math.min(runtime.conf.tabsThreshold, Math.ceil(window.innerWidth / 26));
@@ -365,9 +377,9 @@ const Front = (function() {
         // send response in callback from buildUsage
         delete message.ack;
         buildUsage(message.metas, function(usage) {
-            top.postMessage({surfingkeys_data: {
+            top.postMessage({surfingkeys_uihost_data: {
                 data: usage,
-                responseToContent: message.commandToFrontend,
+                toContent: true,
                 id: message.id
             }}, self.topOrigin);
         });
@@ -548,7 +560,7 @@ const Front = (function() {
     };
 
     _actions['showStatus'] = function(message) {
-        StatusBar.show(message.position, message.content, message.duration);
+        StatusBar.show(message.contents, message.duration);
     };
 
     document.addEventListener("surfingkeys:showStatus", function(evt) {
@@ -625,11 +637,15 @@ const Front = (function() {
 
     _actions['initFrontend'] = function(message) {
         self.topOrigin = message.origin;
+        self.topSize = message.winSize;
         return new Date().getTime();
     };
 
     window.addEventListener('message', function(event) {
-        var _message = event.data && event.data.surfingkeys_data;
+        var _message = event.data && event.data.surfingkeys_frontend_data;
+        if (_message === undefined) {
+            return;
+        }
         if (_callbacks[_message.id]) {
             var f = _callbacks[_message.id];
             // returns true to make callback stay for coming response.
@@ -639,10 +655,10 @@ const Front = (function() {
         } else if (_message.action && _actions.hasOwnProperty(_message.action)) {
             var ret = _actions[_message.action](_message);
             if (_message.ack) {
-                top.postMessage({surfingkeys_data: {
+                top.postMessage({surfingkeys_uihost_data: {
                     data: ret,
                     action: _message.action + "Ack",
-                    responseToContent: _message.commandToFrontend,
+                    toContent: true,
                 }}, self.topOrigin);
             }
         }
@@ -701,22 +717,21 @@ var StatusBar = (function() {
     var timerHide = null;
     var ui = Front.statusBar;
 
+    // 4 spans
     // mode: 0
     // search: 1
     // searchResult: 2
     // proxy: 3
-    self.show = function(n, content, duration) {
+    self.show = function(contents, duration) {
         if (timerHide) {
             clearTimeout(timerHide);
             timerHide = null;
         }
         var span = ui.querySelectorAll('span');
-        if (n < 0) {
-            span.forEach(function(s) {
-                setSanitizedContent(s, "");
-            });
-        } else {
-            setSanitizedContent(span[n], content);
+        for (var i = 0; i < contents.length; i++) {
+            if (contents[i] !== undefined) {
+                setSanitizedContent(span[i], contents[i]);
+            }
         }
         var lastSpan = -1;
         for (var i = 0; i < span.length; i++) {
@@ -738,7 +753,7 @@ var StatusBar = (function() {
         Front.flush();
         if (duration) {
             timerHide = setTimeout(function() {
-                self.show(n, "");
+                self.show(["", "", "", ""]);
             }, duration);
         }
     };
@@ -763,7 +778,7 @@ var Find = (function() {
     var historyInc;
     function reset() {
         input = null;
-        StatusBar.show(1, "");
+        StatusBar.show(["", ""]);
         self.exit();
     }
 
@@ -777,7 +792,7 @@ var Find = (function() {
      */
     self.open = function() {
         historyInc = -1;
-        StatusBar.show(1, '<input id="sk_find" class="sk_theme"/>');
+        StatusBar.show(["/", '<input id="sk_find" class="sk_theme"/>']);
         input = Front.statusBar.querySelector("input");
         if (!getBrowserName().startsWith("Safari")) {
             input.oninput = function() {

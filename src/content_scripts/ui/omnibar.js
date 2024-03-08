@@ -11,6 +11,8 @@ import {
     htmlEncode,
     parseAnnotation,
     regexFromString,
+    safeDecodeURI,
+    safeDecodeURIComponent,
     scrollIntoViewIfNeeded,
     setSanitizedContent,
     showBanner,
@@ -389,7 +391,7 @@ function createOmnibar(front, clipboard) {
     };
 
     self.createURLItem = function(b, rxp) {
-        b.title = (b.title && b.title !== "") ? b.title : decodeURI(b.url);
+        b.title = (b.title && b.title !== "") ? b.title : safeDecodeURI(b.url);
         var type = "🔥", additional = "", uid = b.uid;
         if (b.hasOwnProperty('lastVisitTime')) {
             type = "🕜";
@@ -403,18 +405,17 @@ function createOmnibar(front, clipboard) {
         } else if(b.hasOwnProperty('width')) {
             type = "🔖";
             uid = "T" + b.windowId + ":" + b.id;
-        // } else if(b.type && /^\p{Emoji}$/u.test(b.type)) {
+            // } else if(b.type && /^\p{Emoji}$/u.test(b.type)) {
         } else if(b.type && b.type.length === 2 && b.type.charCodeAt(0) > 255) {
             type = b.type;
         }
+        var li = createElementWithContent('li', `<div class="icon">${type}</div>`);
         if (b.hasOwnProperty('favIconUrl')) {
-          var li = createElementWithContent('li',
-            `<img/><div class="text-container"><div class="title">${self.highlight(rxp, htmlEncode(b.title))} ${additional}</div><div class="url">${self.highlight(rxp, htmlEncode(decodeURIComponent(b.url)))}</div></div>`, { "class": "tab" });
-          attachFaviconToImgSrc(b, li.querySelector('img'));
-        } else {
-          var li = createElementWithContent('li',
-            `<div class="title">${type} ${self.highlight(rxp, htmlEncode(b.title))} ${additional}</div><div class="url">${self.highlight(rxp, htmlEncode(decodeURIComponent(b.url)))}</div>`);
+            li = createElementWithContent('li', `<img class="icon"/>`);
+            attachFaviconToImgSrc(b, li.querySelector('img'));
         }
+        li.appendChild(createElementWithContent('div',
+            `<div class="title">${self.highlight(rxp, htmlEncode(b.title))} ${additional}</div><div class="url">${self.highlight(rxp, htmlEncode(safeDecodeURIComponent(b.url)))}</div>`, { "class": "text-container" }));
         li.uid = uid;
         li.url = b.url;
         return li;
@@ -1283,7 +1284,7 @@ function SearchEngine(omnibar, front) {
             url: message.url,
             suggestionURL: message.suggestionURL
         };
-        const searchEngineIconStorageKey = `surfingkeys.searchEngineIcon.${message.alias}`;
+        const searchEngineIconStorageKey = `surfingkeys.searchEngineIcon.${message.prompt}`;
         const searchEngineIcon = localStorage.getItem(searchEngineIconStorageKey);
         if (searchEngineIcon) {
             self.aliases[message.alias].prompt = `<img src="${searchEngineIcon}" alt=${message.prompt} style="width: 20px;" />`;
@@ -1300,8 +1301,10 @@ function SearchEngine(omnibar, front) {
             RUNTIME('requestImage', {
                 url: iconUrl.href,
             }, function(response) {
-                localStorage.setItem(searchEngineIconStorageKey, response.text);
-                self.aliases[message.alias].prompt = `<img src="${response.text}" alt=${message.prompt} style="width: 20px;" />`;
+                if (response) {
+                    localStorage.setItem(searchEngineIconStorageKey, response.text);
+                    self.aliases[message.alias].prompt = `<img src="${response.text}" alt=${message.prompt} style="width: 20px;" />`;
+                }
             });
         }
     };
@@ -1311,7 +1314,7 @@ function SearchEngine(omnibar, front) {
     front._actions['getSearchAliases'] = function (message) {
         front.postMessage({
             aliases: self.aliases,
-            responseToContent: message.commandToFrontend,
+            toContent: true,
             id: message.id
         });
     };

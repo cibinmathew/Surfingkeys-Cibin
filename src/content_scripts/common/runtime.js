@@ -83,6 +83,7 @@ var runtime = (function() {
             startToShowEmoji: 2,
             stealFocusOnLoad: true,
             tabsThreshold: 100,
+            verticalTabs: true,
             textAnchorPat: /(^[\n\r\s]*\S{3,}|\b\S{4,})/g,
             ignoredFrameHosts: ["https://tpc.googlesyndication.com"],
             scrollFriction: 0,
@@ -157,7 +158,7 @@ var runtime = (function() {
             if (topUrl === "null" || new URL(topUrl).origin === "file://") {
                 topUrl = "*";
             }
-            top.postMessage({surfingkeys_data: msg}, topUrl);
+            top.postMessage({surfingkeys_uihost_data: msg}, topUrl);
         });
     };
 

@@ -1757,25 +1757,9 @@ function start(browser) {
     self.manageWindow = function(message, sender, sendResponse) {
         console.log("hello");
         var tabId;
-        // chrome.windows.getAll({
-        //     populate: false
-        // }, function(windows) {
-        //     windows.forEach(function(w) {
-        //         console.log(w.id);
-        //     });
-        // });
-
         var wid;
-        // chrome.storage.local.set({ key: value }).then(() => {
-        //     console.log("Value is set");
-        //   });
-
-        
-
         if (message.bookmark)
         {
-            // console.log("bookmarking current window: " + wid);
-            // return wid;
             chrome.windows.getCurrent({
                 populate: false
             }, function(w) {

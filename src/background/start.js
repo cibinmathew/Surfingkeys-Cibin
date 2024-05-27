@@ -1023,7 +1023,6 @@ function start(browser) {
         const regex = new RegExp( query, 'gi');
         document.body.innerHTML = document.body.innerHTML.replace(regex, match => `<mark>${match}</mark>`);
     };
-
     self.getBookmarkFolders = function(message, sender, sendResponse) {
         chrome.bookmarks.getTree(function(tree) {
             bookmarkFolders = [];
@@ -1738,42 +1737,13 @@ function start(browser) {
     self.manageWindow = function(message, sender, sendResponse) {
         console.log("hello");
         var tabId;
-        // chrome.windows.getAll({
-        //     populate: false
-        // }, function(windows) {
-        //     windows.forEach(function(w) {
-        //         console.log(w.id);
-        //     });
-        // });
-
         var wid;
-        // chrome.storage.local.set({ key: value }).then(() => {
-        //     console.log("Value is set");
-        //   });
-
-        
-
         if (message.bookmark)
         {
-            // console.log("bookmarking current window: " + wid);
-            // return wid;
             chrome.windows.getCurrent({
                 populate: false
             }, function(w) {
                 console.log("getting current window: " + w.id);
-<<<<<<< HEAD
-=======
-
->>>>>>> cbd548e (Manage window)
-                // return w.id
-                // chrome.tabs.getCurrent(function (tab) {
-                //     console.log(tab.id);
-                //     tabId = tab.id;
-                //     _response(message, sendResponse, {
-                //         tabs: w.id,
-                //         tabId: tab.id
-                //     });
-                //   });
                   _response(message, sendResponse, {
                     tabs: w.id
                 });
@@ -1791,6 +1761,34 @@ function start(browser) {
     };
 
 
+    self.manageWindow2 = function(message, sender, sendResponse) {
+        console.log("hello");
+        var tabId;
+        var wid;
+        if (message.bookmark)
+        {
+            // console.log("bookmarking current window: " + wid);
+            // return wid;
+            chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
+                console.log("helllloooo");
+                console.log(tabs[0]);
+                _response(message, sendResponse, {
+                    wId: tabs[0].windowId,
+                    tabId: tabs[0].id,
+                    url: tabs[0].url
+                });
+              });
+            return
+        }
+        else {
+            console.log("opening bookmarked window: " + message.wId);
+            chrome.windows.update(message.wId, {focused: true  });
+            
+            // todo: ignore if tabId is already closed. currently throwing error but wont fail the flow :-)
+            console.log("opened bookmarked tab: " + message.wId);
+            chrome.tabs.update(message.tabId, {active: true  });
+        }
+    };
     self.openIncognito = function(message, sender, sendResponse) {
         chrome.windows.create({"url": message.url, "incognito": true});
     };

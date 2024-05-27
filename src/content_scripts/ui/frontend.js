@@ -25,6 +25,7 @@ import createAPI from '../common/api.js';
 import createDefaultMappings from '../common/default.js';
 import createOmnibar from './omnibar.js';
 import createCommands from './command.js';
+// import createCommands from './cbn_command.js';
 
 const Front = (function() {
     const clipboard = createClipboard();

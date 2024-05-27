@@ -35,6 +35,24 @@ function RUNTIME(action, args, callback) {
     }
 }
 
+// Content script
+function highlightSearch(query) {
+    // Basic example: Search for the query in the page and highlight it.
+    // In a real implementation, you'd want to handle cases like multiple matches, case sensitivity, etc.
+    const regex = new RegExp(query, 'gi');
+    document.body.innerHTML = document.body.innerHTML.replace(regex, match => `<mark>${match}</mark>`);
+}
+
+// Listen for messages from the background script
+chrome.runtime.onMessage.addListener(
+    function(request, sender, sendResponse) {
+        if (request.action == "highlightSearch") {
+            highlightSearch(request.query);
+            sendResponse({result: "success"});
+        }
+    }
+);
+
 var runtime = (function() {
     var self = {
         conf: {

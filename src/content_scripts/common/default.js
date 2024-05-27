@@ -176,6 +176,112 @@ module.exports = function(api) {
         });
     });
 
+//     mapkey('oI', '#8Bookmark fav window', function() {
+//         var wid;
+
+//         // RUNTIME('getTabs', { queryInfo: {audible: true}}, response => {
+//         //     if (response.tabs?.at(0)) {
+//         //         tab = response.tabs[0]
+//         //         RUNTIME('focusTab', {
+//         //             windowId: tab.windowId,
+//         //             tabId: tab.id
+//         //         });
+//         //     }
+//         // })
+
+        
+
+//         RUNTIME('manageWindow', {
+//             url: window.location.href,
+//             bookmark: true
+//         },
+//         response => {
+//             console.log("loggingg. response....");
+//             console.log(response);
+//             console.log(response.tabs);
+//             console.log("stored to storage");
+//             chrome.storage.local.set({favWindow: "cibin"});
+//             chrome.storage.local.get("favWindow", async function(item) {console.log("set and get: " + item.tabs)});
+//             const key = 'myKey';
+//             const value = { name: response.tabs };
+            
+//             chrome.storage.local.set({key: value}, () => {
+//                 if (chrome.runtime.lastError)
+//                     console.log('Error setting');
+            
+//                 console.log('Stored name: ' + value.name);
+//             });
+            
+                      
+
+//         }
+//     );
+//     chrome.storage.local.set({key: value}, () => {
+//         if (chrome.runtime.lastError)
+//             console.log('Error setting');
+    
+//         console.log('Stored name2: ' + value.name);
+//     });
+//     });
+
+//     mapkey('oo', '#8Open fav window', function() {
+//         var wid;
+//         // chrome.storage.local.get( /* String or Array */ ["favWindow"], async function(items) {
+//         // chrome.storage.local.get( "favWindow", async function(items) {
+//             // wid = JSON.parse(items["favWindow"]);
+//             // wid = items;
+//             // wid = items["favWindow"];
+//         // });
+        
+//         const key = 'myKey';
+//         chrome.storage.local.get([key], (result) => {
+//             if (chrome.runtime.lastError)
+//                 console.log('Error getting');
+        
+//             console.log('Retrieved name: ' + result);
+//             console.log('Retrieved name: ' + result.myKey);
+//             console.log('Retrieved name: ' + result.myKey.name);
+//         });  
+// /*
+
+//         chrome.storage.local.get( "favWindow", async function(item) {wid=item['favWindow']});
+//         console.log("wid:-> "+ wid);
+//         chrome.storage.local.get( "favWindow", async function(item) {console.log("local: " + item.tabs)});
+//         chrome.storage.local.get(null, function(items) {
+//             var allKeys = Object.keys(items);
+//             console.log(allKeys);
+//         });
+
+//         // chrome.storage.local.get("favWindow")
+//         //     .then(()result => console.log("result: " + result))
+//         //     .catch(error => console.log(error));
+
+//         chrome.storage.local.get(["favWindow"])
+//             .then(result => console.log(result.favWindow))
+//             .catch(error => console.log(error));
+
+//         chrome.storage.local.get("favWindow")
+//             .then(result => console.log(result.favWindow))
+//             .catch(error => console.log(error));
+
+//         RUNTIME('manageWindow', {
+//             url: window.location.href,
+//             bookmark: false,
+//             // wid: 1368898065
+//             wid: wid
+//         });
+//         */
+//     });
+
+    // mapkey('oo', '#8Open new window', function() {
+    //     wid=RUNTIME('openWindow', {
+    //         url: window.location.href,
+    //         incognito: false
+    //     });
+    //     console.log("return value: ");
+    //     console.log(wid);
+    // });
+
     mapkey('H', '#8Open opened URL in current tab', function() {
         Front.openOmnibar({type: "TabURLs"});
     });

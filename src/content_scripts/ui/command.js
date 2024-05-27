@@ -129,4 +129,13 @@ export default (normal, command, omnibar) => {
             userAgent: args.join(' ')
         });
     });
+    
+    // Not working (commands are not detected)
+    command('replaceAsciiColorCodes', 'replace Ascii Color Codes', function(args) {
+        const text=[...document.querySelectorAll("pre")];    
+        for (let i=0; i < text.length; i++) {
+            // https://stackoverflow.com/a/7150870
+            text[i].innerHTML = text[i].innerHTML.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,"");
+        }
+    });
 }

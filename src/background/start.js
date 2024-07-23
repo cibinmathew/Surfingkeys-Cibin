@@ -941,6 +941,22 @@ function start(browser) {
             }
         });
     };
+
+    self.closeMatchingTabs = function(message, sender, sendResponse) {
+        // TODO: support tab id, window id, as filter params
+        // TODO: merge with self.closeTab??
+        console.log("closeMatchingTabs: killing tab ");
+        chrome.tabs.query({
+            url: message.url
+        }, function(tabs) {
+            const urls = tabs.map(person => person.url);
+            urls.forEach(name => console.log("closeMatchingTabs: killing tab url:" + name));
+            chrome.tabs.remove(tabs.map(function(t) {
+                return t.id;
+            }));
+        });
+    };
+
     let previousWindowChoice = -1;
     self.getWindows = function (message, sender, sendResponse) {
         chrome.tabs.query({currentWindow: false}, function(tabs) {

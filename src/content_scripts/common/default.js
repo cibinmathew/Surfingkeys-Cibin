@@ -762,6 +762,14 @@ export default function(api, clipboard, insert, normal, hints, visual, front) {
     mapkey('gU', '#4Go to root of current URL hierarchy', function() {
         window.location.href = window.location.origin;
     });
+
+    mapkey('cx', '#3 close all tabs matching url pattern', function() {
+        let url = prompt("kill all tabs for matching url patterns \neg: https://*.google.com/foo*bar or \n*://mail.google.com/* ", location.href + "/*");
+        if (url != null) {
+            RUNTIME("closeMatchingTabs", { url: url });
+        }
+    });
+
     mapkey('gxt', '#3Close tab on left', function() {
         RUNTIME("closeTabLeft");
     });

@@ -1213,7 +1213,7 @@ function start(browser) {
                     const registerSettingSnippets = () => {
                         chrome.userScripts.register([{
                             id: userScriptId,
-                            matches: ['*://*/*'],
+                            matches: ['*://*/*', 'file:///*'],
                             js: [{code}]
                         }]);
                     };

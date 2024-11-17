@@ -950,7 +950,7 @@ function start(browser) {
             url: message.url
         }, function(tabs) {
             const urls = tabs.map(person => person.url);
-            text= "Matches: "+ urls.length + "\n\n" + urls.join("\n");
+            let text= "Matches: "+ urls.length + "\n\n" + urls.join("\n");
             if (confirm(text) == true) {
                 urls.forEach(name => console.log("closeMatchingTabs: killing tab url:" + name));
                 chrome.tabs.remove(tabs.map(function(t) {

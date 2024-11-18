@@ -85,6 +85,7 @@ module.exports = (env, argv) => {
         background: `./src/background/${browser}.js`,
         content: `./src/content_scripts/${browser}.js`,
         'pages/frontend': `./src/content_scripts/ui/frontend.js`,
+        'pages/options2': './src/content_scripts/options2.js',
         'pages/start': './src/content_scripts/start.js',
         'pages/ace': './src/content_scripts/ace.js',
     };

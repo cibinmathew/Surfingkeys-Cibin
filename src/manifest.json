@@ -45,6 +45,7 @@
         "downloads",
         "topSites",
         "clipboardRead",
+        "contextMenus",
         "clipboardWrite"
     ],
     "background": {
@@ -70,6 +71,7 @@
     ],
     "web_accessible_resources": [
         "pages/neovim.html",
+        "pages/options2.html",
         "pages/default.js",
         "pages/emoji.tsv",
         "pages/l10n.json",

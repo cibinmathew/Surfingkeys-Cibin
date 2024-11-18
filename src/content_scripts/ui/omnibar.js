@@ -532,6 +532,7 @@ function createOmnibar(front, clipboard) {
         }
 
         self.tabbed = (args.tabbed !== undefined) ? args.tabbed : true;
+        self.has_callback = args.has_callback
         handler = handlers[args.type];
         self.input.focus();
         self.enter();
@@ -587,13 +588,22 @@ function createOmnibar(front, clipboard) {
                 tabId: parseInt(uid[1])
             });
         } else if (url && url.length) {
-            RUNTIME("openLink", {
-                tab: {
-                    tabbed: this.tabbed,
-                    active: this.activeTab
-                },
-                url: url
-            });
+            console.log("cibin opening...")
+            if (self.has_callback) {
+                console.log("cibin not running openlink due to custom callback...")
+                // callback(self.callback)
+            // todo: how to return the match back
+            }
+            else {
+                console.log("cibin opening openLink...")
+                RUNTIME("openLink", {
+                    tab: {
+                        tabbed: this.tabbed,
+                        active: this.activeTab
+                    },
+                    url: url
+                });
+            }
         }
         return this.activeTab;
     };
@@ -1093,6 +1103,7 @@ function OpenWindows(omnibar, front) {
         return true;
     };
     self.onOpen = function() {
+        debugger
         omnibar.input.placeholder = "Press enter without focusing an item to move to a new window.";
         self.getResults();
         self.onInput();
@@ -1471,6 +1482,7 @@ function OmniQuery(omnibar, front) {
     };
 
     self.onEnter = function() {
+        debugger
         front.contentCommand({
             action: 'omnibar_query_entered',
             query: omnibar.input.value

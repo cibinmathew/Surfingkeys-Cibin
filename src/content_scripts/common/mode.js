@@ -26,6 +26,7 @@ const Mode = function(name, statusLine) {
     };
 
     this.enter = function(priority, reentrant) {
+        // debugger
         var pos = mode_stack.indexOf(this);
         if (!this.priority) {
             this.priority = priority || mode_stack.length;

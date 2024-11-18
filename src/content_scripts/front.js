@@ -342,6 +342,7 @@ function createFront(insert, normal, hints, visual, browser) {
      * }, {domain: /console.amazonaws|console.aws.amazon.com/i});
      */
     self.openOmnibar = function(args) {
+        debugger
         args.action = 'openOmnibar';
         self.command(args);
     };

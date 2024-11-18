@@ -978,8 +978,8 @@ function start(browser) {
             url: message.url
         }, function(tabs) {
             const urls = tabs.map(person => person.url);
-            let text= "Matches: "+ urls.length + "\n\n" + urls.join("\n");
-            if (confirm(text) == true) {
+            const disp_text= "Matches: "+ urls.length + "\n\n" + urls.join("\n");
+            if (confirm(disp_text) == true) {
                 urls.forEach(name => console.log("closeMatchingTabs: killing tab url:" + name));
                 chrome.tabs.remove(tabs.map(function(t) {
                     return t.id;
@@ -1133,6 +1133,7 @@ function start(browser) {
     }
 
     function openUrlInNewTab(currentTab, url, message) {
+        debugger
         var newTabPosition;
         if (currentTab) {
             switch (conf.newTabPosition) {
@@ -1153,6 +1154,7 @@ function start(browser) {
                     break;
             }
         }
+        // chrome.windows.create({"url": url, "incognito": true});
         chrome.tabs.create({
             url: url,
             active: message.tab.active,
@@ -1170,6 +1172,8 @@ function start(browser) {
     }
 
     self.openLink = function(message, sender, sendResponse) {
+        debugger
+        console.log("cbinb")
         var url = normalizeURL(message.url);
         if (url.startsWith("javascript:")) {
             sendTabMessage(sender.tab.id, 0, {
@@ -1803,8 +1807,9 @@ function start(browser) {
         {
             // console.log("bookmarking current window: " + wid);
             // return wid;
+            console.log("helllloooo. message.bookmar is true here");
             chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
-                console.log("helllloooo");
+                console.log("helllloooo. message.bookmar is true");
                 console.log(tabs[0]);
                 _response(message, sendResponse, {
                     wId: tabs[0].windowId,
@@ -1816,13 +1821,13 @@ function start(browser) {
         }
         else {
             console.log("opening bookmarked window: " + message.wId);
-            chrome.windows.update(message.wId, {focused: true  });
-            
+            chrome.windows.update(message.wId, {focused: true  });            
             // todo: ignore if tabId is already closed. currently throwing error but wont fail the flow :-)
             console.log("opened bookmarked tab: " + message.wId);
             chrome.tabs.update(message.tabId, {active: true  });
         }
     };
+
     self.openIncognito = function(message, sender, sendResponse) {
         chrome.windows.create({"url": message.url, "incognito": true});
     };

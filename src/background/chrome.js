@@ -185,3 +185,37 @@ start({
     _setNewTabUrl,
     _getContainerName
 });
+
+
+////////////////////////
+//    CONTEXT MENU    //
+////////////////////////
+
+// https://developer.chrome.com/docs/extensions/develop/ui/context-menu
+
+const tldLocales = {
+    'https://google.com.au/search?q=<sel>': 'Australia',
+    'https://google.com.br/search?q=<sel>': 'Brazil',
+  }
+  
+  chrome.runtime.onInstalled.addListener(async () => {
+    for (let [tld, locale] of Object.entries(tldLocales)) {
+      chrome.contextMenus.create({
+        id: tld,
+        title: locale + ": %s",
+        type: 'normal',
+        contexts: ['selection'],
+      });
+    }
+  });
+
+// Open a new search tab when the user clicks a context menu
+chrome.contextMenus.onClicked.addListener((item, tab) => {
+    // https://github.com/GoogleChrome/chrome-extensions-samples/blob/main/api-samples/contextMenus/global_context_search/background.js
+    let tld = item.menuItemId;
+    tld=tld.replace('<sel>', item.selectionText)
+    console.log(tld)
+    const url = new URL(tld);
+    // url.searchParams.set('q', item.selectionText);
+    chrome.tabs.create({ url: url.href, index: tab.index + 1 });
+  });  

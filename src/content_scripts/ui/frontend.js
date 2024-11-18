@@ -360,6 +360,8 @@ const Front = (function() {
     }
 
     _usage.onShow = function(message) {
+        message.metas.map(obj => obj.word + " : " + obj.annotation).join('\n');
+        debugger
         buildUsage(message.metas, function(usage) {
             setSanitizedContent(_usage, usage);
         });

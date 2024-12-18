@@ -16,6 +16,7 @@ import {
     initSKFunctionListener,
     isEditable,
     isElementClickable,
+    isElementDrawn,
     refreshHints,
     setSanitizedContent,
 } from './utils.js';
@@ -344,7 +345,7 @@ div.hint-scrollable {
     }
 
     function resetHints() {
-        if (!document.documentElement.contains(hintsHost)) {
+        if (Mode.getCurrent() !== self || !document.documentElement.contains(hintsHost)) {
             return;
         }
         var start = new Date().getTime();
@@ -441,6 +442,9 @@ div.hint-scrollable {
 
     initSKFunctionListener("hints", {
         scrollStarted: () => {
+            if (Mode.getCurrent() !== self || !document.documentElement.contains(hintsHost)) {
+                return;
+            }
             setSanitizedContent(holder, "");
             holder.remove();
             prefix = "";
@@ -685,8 +689,16 @@ div.hint-scrollable {
         return elements.length;
     }
 
+    function placeHintsHost() {
+        let topLayerElement = document.querySelector("dialog");
+        if (!topLayerElement || !isElementDrawn(topLayerElement)) {
+            topLayerElement = document.documentElement;
+        }
+        topLayerElement.appendChild(hintsHost);
+    }
+
     function createHints(cssSelector, attrs) {
-        document.documentElement.appendChild(hintsHost);
+        placeHintsHost();
         if (cssSelector.constructor.name === "RegExp") {
             return createHintsForTextNode(cssSelector, attrs);
         } else if (Array.isArray(cssSelector)) {
@@ -696,7 +708,7 @@ div.hint-scrollable {
     }
 
     self.createInputLayer = function() {
-        document.documentElement.appendChild(hintsHost);
+        placeHintsHost();
         const cssSelector = getCssSelectorsOfEditable();
 
         var elements = getVisibleElements(function(e, v) {

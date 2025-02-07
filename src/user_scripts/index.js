@@ -8,6 +8,7 @@ import {
     httpRequest,
     initSKFunctionListener,
     isElementPartiallyInViewport,
+    getRealEdit,
     showBanner,
     showPopup,
     tabOpenLink,
@@ -136,6 +137,7 @@ function createCssSelectorForElements(cssSelector, elements) {
 const api = {
     RUNTIME,
     aceVimMap,
+    getRealEdit,
     addVimMapKey,
     addSearchAlias,
     cmap,

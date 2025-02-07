@@ -19,6 +19,7 @@ import {
     showBanner,
     showPopup,
     tabOpenLink,
+    getRealEdit,
 } from './utils.js';
 
 function createAPI(clipboard, insert, normal, hints, visual, front, browser) {
@@ -471,6 +472,7 @@ function createAPI(clipboard, insert, normal, hints, visual, front, browser) {
     return {
         RUNTIME,
         aceVimMap,
+        getRealEdit,
         addVimMapKey,
         addSearchAlias,
         cmap,

@@ -340,12 +340,16 @@ const Front = (function() {
             }
 
             metas = metas.concat(getAnnotations(omnibar.mappings));
+            let exported_hints=[];
             metas.forEach(function(meta) {
                 const w = KeyboardUtils.decodeKeystroke(meta.word);
                 const annotation = localizeAnnotation(locale, meta.annotation);
                 const item = `<div><span class=kbd-span><kbd>${htmlEncode(w)}</kbd></span><span class=annotation>${annotation}</span></div>`;
                 help_groups[meta.feature_group].push(item);
+                exported_hints.push(w + ' : ' + meta.annotation)
             });
+            console.log(exported_hints.join('"\n",'))
+            debugger  // the list of all active Keybindings can be captured here
             help_groups = help_groups.map(function(g, i) {
                 if (g.length) {
                     return "<div><div class=feature_name><span>{0}</span></div>{1}</div>".format(locale(feature_groups[i]), g.join(''));

@@ -23,6 +23,9 @@
         },
         "proxyThis": {
             "description": "Toggle current site in autoproxy_hosts."
+        },
+        "cbnTestCommand": {
+            "description": "cbnTestCommand"
         }
     },
     "browser_action": {

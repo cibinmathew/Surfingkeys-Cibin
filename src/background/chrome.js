@@ -196,6 +196,7 @@ start({
 const tldLocales = {
     'https://google.com.au/search?q=<sel>': 'Australia',
     'https://google.com.br/search?q=<sel>': 'Brazil',
+    "https://chatgpt.com/?hints=search&ref=ext&q=<sel>": "search in chatGpt"
   }
   
   chrome.runtime.onInstalled.addListener(async () => {

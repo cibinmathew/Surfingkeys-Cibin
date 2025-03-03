@@ -61,7 +61,7 @@ function createInsert() {
         feature_group: 15,
         code: moveCursorEOL
     });
-    self.mappings.add(KeyboardUtils.encodeKeystroke("<Ctrl-f>"), {
+    self.mappings.add(KeyboardUtils.encodeKeystroke("<Ctrl-a>"), {
         annotation: "Move the cursor to the beginning of the line",
         feature_group: 15,
         code: function() {
@@ -115,6 +115,21 @@ function createInsert() {
             } else {
                 // for contenteditable div
                 document.getSelection().modify("move", "forward", "word");
+            }
+        }
+    });
+    self.mappings.add(KeyboardUtils.encodeKeystroke("<Ctrl-f>"), {
+        annotation: "Move the cursor Forward 1 character",
+        feature_group: 15,
+        code: function() {
+            var element = getRealEdit();
+            if (element.setSelectionRange !== undefined) {
+                // var pos = nextNonWord(element.value, 1, element.selectionStart);
+                var pos= element.selectionStart+1;
+                element.setSelectionRange(pos, pos);
+            } else {
+                // for contenteditable div
+                document.getSelection().modify("move", "forward", "character");
             }
         }
     });

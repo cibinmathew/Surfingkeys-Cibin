@@ -432,6 +432,11 @@ function start(browser) {
                         });
                     });
                 });
+            case 'cbnTestCommand':
+                getActiveTab(function(tab) {
+                    // chrome.tabs.remove(tab.id);
+                    console.log("test")
+                });
                 break;
             default:
                 break;

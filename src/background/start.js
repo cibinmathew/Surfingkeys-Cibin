@@ -1050,6 +1050,78 @@ function start(browser) {
         
         });
     };
+    
+    function groupObjectsByAttr(objects, attr) {
+        return objects.reduce((acc, obj) => {
+            try {
+                if (!acc[obj[attr]]) {
+                    acc[obj[attr]] = []; // Initialize array
+                }
+                acc[obj[attr]].push(obj); // Add object to its attr's group
+            } catch (e) {
+                console.error("Invalid attr:", obj[attr]);
+            }
+            return acc;
+        }, {});
+    }
+    
+    
+    self.groupTabs = async function(message, sender, sendResponse) {
+        const windowId = sender.tab.windowId;
+        var i=1;
+        console.log("grouping tab")
+        let queryOptions = { currentWindow: message.currentWindow, highlighted: false };
+        // let tabs = await chrome.tabs.query(queryOptions);
+        // var tab = sender.tab;
+        // var queryInfo = message.queryInfo || {};
+        chrome.tabs.query(queryOptions, async function(tabs) {
+
+            for (let i in tabs) {
+                tabs[i].domain = new URL(tabs[i].url).hostname; 
+            }
+            const grouped = groupObjectsByAttr(tabs, "domain");
+            console.log(grouped);
+            for (let domain in grouped) {
+                console.log(`${domain}: ${grouped[domain]}`);
+                if (grouped[domain].length<message.MinGroupSize)
+                    continue
+            
+                // Create a new tab group
+                chrome.tabs.group({ tabIds: grouped[domain].map(t => t.id) }, function(groupId) {
+                    console.log(grouped[domain].length);
+                });
+                
+                let groupId = await chrome.tabs.group({
+                    tabIds: grouped[domain].map(t => t.id)
+                });
+                console.log(groupId)
+                const colors = ["red", "blue", "green", "grey", "pink", "yellow"];
+                let color=colors[Math.floor(Math.random() * colors.length)] // get a random color
+                await chrome.tabGroups.update(groupId, { title: domain, color: color});
+                const groupTabs = grouped[domain]
+                .map(tab => tab.id);
+                
+                // move to a new window if too many items in group
+                if (groupTabs.length >= message.SeparateWindowIf )
+                {
+                    // // create a new window and move tab to it
+                    // Create a new window with one tab 
+                    // todo: donot create a new window if already it has only current domain tabs or if the total number of tabs are very small incl from other domains
+                    chrome.windows.create({ tabId: groupTabs[0] }, (newWindow) => {
+                        // Move the remaining tabs 
+                        chrome.tabs.move(groupTabs.slice(1), { windowId: newWindow.id, index: -1 }, () => {
+                            // Recreate the group
+                            chrome.tabs.group({ tabIds: groupTabs, createProperties: { windowId: newWindow.id } });
+                        });
+                    });                
+                    
+                }
+                // chrome.tabGroups.update(groupId, { title: "New Group", color: "blue" });
+            }
+            
+        });
+    };
+    
     self.markMatches = function(message, sender, sendResponse) {
         console.log("searching start.js ...")
         debugger

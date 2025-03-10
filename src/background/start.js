@@ -979,17 +979,21 @@ function start(browser) {
         // TODO: support tab id, window id, as filter params
         // TODO: merge with self.closeTab??
         console.log("closeMatchingTabs: fetchings tabs");
-        chrome.tabs.query({
-            url: message.url
-        }, function(tabs) {
+        chrome.tabs.query({ url: message.url }, function(tabs) {
             const urls = tabs.map(person => person.url);
             const disp_text= "Matches: "+ urls.length + "\n\n" + urls.join("\n");
-            if (confirm(disp_text) == true) {
-                urls.forEach(name => console.log("closeMatchingTabs: killing tab url:" + name));
-                chrome.tabs.remove(tabs.map(function(t) {
-                    return t.id;
-                }));
-            }
+
+            chrome.runtime.sendMessage({ type: "showConfirm", message: disp_text }, (response) => {
+                if (response?.confirmed) {
+                    console.log("User confirmed!");
+                    urls.forEach(name => console.log("closeMatchingTabs: killing tab url:" + name));
+                    chrome.tabs.remove(tabs.map(function(t) {
+                        return t.id;
+                    }));
+                } else {
+                    console.log("User cancelled!");
+                }
+            });
         });
     };
 

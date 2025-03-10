@@ -159,7 +159,11 @@ var runtime = (function() {
     };
 
     chrome.runtime.onMessage.addListener(function(msg, sender, response) {
-        if (_handlers[msg.subject]) {
+        if (msg.type === "showConfirm") {
+            const confirmed = confirm(msg.message);
+            response({ confirmed });
+        }
+        else if (_handlers[msg.subject]) {
             _handlers[msg.subject](msg, sender, response);
         }
     });

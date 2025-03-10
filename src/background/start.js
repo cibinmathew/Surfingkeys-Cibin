@@ -1051,10 +1051,10 @@ function start(browser) {
             i=i+1
             chrome.tabs.move(tab.id, {windowId, index: -1});
             // RUNTIME('moveTab', { position: 1 });
-        
+
         });
     };
-    
+
     function groupObjectsByAttr(objects, attr) {
         return objects.reduce((acc, obj) => {
             try {
@@ -1067,65 +1067,99 @@ function start(browser) {
             }
             return acc;
         }, {});
-    }
-    
-    
-    self.groupTabs = async function(message, sender, sendResponse) {
-        const windowId = sender.tab.windowId;
-        var i=1;
-        console.log("grouping tab")
-        let queryOptions = { currentWindow: message.currentWindow, highlighted: false };
-        // let tabs = await chrome.tabs.query(queryOptions);
-        // var tab = sender.tab;
-        // var queryInfo = message.queryInfo || {};
-        chrome.tabs.query(queryOptions, async function(tabs) {
+    };
 
+
+    self.groupTabs = async function(message, sender, sendResponse) {
+        // groups same domain tabs to a group.
+        // domains matching regex are clubbed together to a group(if they are already > MinGroupSize, they are clubbed to a group with name as domain name else name will be the pattern name)
+
+        // const windowId = sender.tab.windowId;
+        // var i=1;
+        console.log("grouping tabs")
+        // let queryOptions = { currentWindow: message.currentWindow,
+        //     highlighted: message.highlighted
+        //  };
+        // let tabssList = []
+        // tabssList = await chrome.tabs.query(queryOptions);
+
+        // todo: currentWindow in chrome.tabs.query is not working
+        chrome.tabs.query({ }, async function(tabs) {
             for (let i in tabs) {
-                tabs[i].domain = new URL(tabs[i].url).hostname; 
+                tabs[i].domain = new URL(tabs[i].url).hostname;
             }
-            const grouped = groupObjectsByAttr(tabs, "domain");
-            console.log(grouped);
+            const grouped_orig = groupObjectsByAttr(tabs, "domain");
+            console.log(grouped_orig);
+            const grouped={}
+            // group all domains matching the pattern under a single key instead of individual tab group for each domain
+            let matchedDomains=[]
+            message.groupingPatterns.forEach(item => {
+                grouped[item.name] = []  // initialise an empty group
+                for (let domain in grouped_orig) {
+                    if (
+                        (grouped_orig[domain].length < message.MinGroupSize) &&
+                            (new RegExp(`^(https?:\\/\\/)?(www\\.)?(${item.domainPattern})(\\/|$)`).test(domain))
+                        ) {
+                            grouped[item.name].push(...grouped_orig[domain])
+                            delete grouped_orig[domain]
+                            if (!matchedDomains.includes(item.name))
+                                matchedDomains.push(item.name)
+                        }
+                    else 
+                        grouped[domain]=grouped_orig[domain]
+                    }
+            });
+
             for (let domain in grouped) {
                 console.log(`${domain}: ${grouped[domain]}`);
-                if (grouped[domain].length<message.MinGroupSize)
-                    continue
-            
-                // Create a new tab group
-                chrome.tabs.group({ tabIds: grouped[domain].map(t => t.id) }, function(groupId) {
-                    console.log(grouped[domain].length);
-                });
-                
-                let groupId = await chrome.tabs.group({
-                    tabIds: grouped[domain].map(t => t.id)
-                });
+                let title=domain
+
+                if (grouped[domain].length >= message.MinGroupSize || matchedDomains.includes(domain))
+                    console.log("grouping")
+                else
+                    continue  // not grouping single single tabs
+
+                    // Create a new tab group
+                // chrome.tabs.group({ tabIds: grouped[domain].map(t => t.id) }, function(groupId) {
+                //     console.log(grouped[domain].length);
+                // });
+                let groupId=0
+                groupId = await chrome.tabs.group({ tabIds: grouped[domain].map(t => t.id) });
+                // chrome.tabs.group({ tabIds: grouped[domain].map(t => t.id) });
                 console.log(groupId)
-                const colors = ["red", "blue", "green", "grey", "pink", "yellow"];
-                let color=colors[Math.floor(Math.random() * colors.length)] // get a random color
-                await chrome.tabGroups.update(groupId, { title: domain, color: color});
-                const groupTabs = grouped[domain]
-                .map(tab => tab.id);
-                
-                // move to a new window if too many items in group
-                if (groupTabs.length >= message.SeparateWindowIf )
-                {
-                    // // create a new window and move tab to it
-                    // Create a new window with one tab 
-                    // todo: donot create a new window if already it has only current domain tabs or if the total number of tabs are very small incl from other domains
-                    chrome.windows.create({ tabId: groupTabs[0] }, (newWindow) => {
-                        // Move the remaining tabs 
-                        chrome.tabs.move(groupTabs.slice(1), { windowId: newWindow.id, index: -1 }, () => {
-                            // Recreate the group
-                            chrome.tabs.group({ tabIds: groupTabs, createProperties: { windowId: newWindow.id } });
+                console.log("groupId: " + groupId)
+
+                const tabGroupColors = ["grey", "blue", "red", "yellow", "green", "pink", "purple", "cyan", "orange"];
+                let color=tabGroupColors[Math.floor(Math.random() * tabGroupColors.length)] // get a random color
+                await chrome.tabGroups.update(groupId, { title: title, color: color});
+                // chrome.tabGroups.query({}, function(tabs) {
+                //     tabs.forEach(h => {
+                //     console.log(h.id)}
+                //     )
+                //  })
+
+                // chrome.tabGroups.update(groupId, { title: title, color: color});
+                 const groupTabsIds = grouped[domain].map(tab => tab.id);
+
+                 // move to a new window if too many items in group
+                 if (groupTabsIds.length >= message.SeparateWindowIf )
+                    {
+                        // // create a new window and move tab to it
+                        // todo: donot create a new window if already it has only current domain tabs or if the total number of tabs are very small incl from other domains
+                        // Create a new window with one tab first
+                        chrome.windows.create({ tabId: groupTabsIds[0] }, (newWindow) => {
+                            // Move the remaining tabs
+                            chrome.tabs.move(groupTabsIds.slice(1), { windowId: newWindow.id, index: -1 }, async () => {
+                                // Recreate the group in the new window now
+                                groupId = await chrome.tabs.group({ tabIds: groupTabsIds, createProperties: { windowId: newWindow.id } });
+                                await chrome.tabGroups.update(groupId, { title: title, color: color});
+                            });
                         });
-                    });                
-                    
+                    }
                 }
-                // chrome.tabGroups.update(groupId, { title: "New Group", color: "blue" });
-            }
-            
         });
     };
-    
+
     self.markMatches = function(message, sender, sendResponse) {
         console.log("searching start.js ...")
         debugger
@@ -1214,7 +1248,6 @@ function start(browser) {
     }
 
     function openUrlInNewTab(currentTab, url, message) {
-        debugger
         var newTabPosition;
         if (currentTab) {
             switch (conf.newTabPosition) {
@@ -1253,7 +1286,6 @@ function start(browser) {
     }
 
     self.openLink = function(message, sender, sendResponse) {
-        debugger
         console.log("cbinb")
         var url = normalizeURL(message.url);
         if (url.startsWith("javascript:")) {
@@ -1866,7 +1898,7 @@ function start(browser) {
                   _response(message, sendResponse, {
                     tabs: w.id
                 });
-              
+
             });
             return
         }
@@ -1902,7 +1934,7 @@ function start(browser) {
         }
         else {
             console.log("opening bookmarked window: " + message.wId);
-            chrome.windows.update(message.wId, {focused: true  });            
+            chrome.windows.update(message.wId, {focused: true  });
             // todo: ignore if tabId is already closed. currently throwing error but wont fail the flow :-)
             console.log("opened bookmarked tab: " + message.wId);
             chrome.tabs.update(message.tabId, {active: true  });

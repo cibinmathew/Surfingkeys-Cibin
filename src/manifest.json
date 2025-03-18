@@ -13,9 +13,17 @@
             "description": "Restart this extenstion."
         },
         "previousTab": {
+            "suggested_key": {
+                "default": "Ctrl+L",
+                "mac": "MacCtrl+L"
+            },
             "description": "Go to the previous tab."
         },
         "nextTab": {
+            "suggested_key": {
+                "default": "Ctrl+O",
+                "mac": "MacCtrl+O"
+            },
             "description": "Go to the next tab."
         },
         "closeTab": {

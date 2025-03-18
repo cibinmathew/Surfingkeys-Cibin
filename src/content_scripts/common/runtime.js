@@ -38,7 +38,7 @@ function RUNTIME(action, args, callback) {
     }
 }
 
-// Content script
+// Content script move to background/start.js??
 function highlightSearch(query) {
     // Basic example: Search for the query in the page and highlight it.
     // In a real implementation, you'd want to handle cases like multiple matches, case sensitivity, etc.
